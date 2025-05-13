@@ -64,6 +64,7 @@ export class StitchView extends DOMWidgetView {
     // Initialization steps when model is ready.
     const refreshTimeMs = 100;
     const initOnReady = () => {
+      console.log("initOnReady fired");
       if (this.model.isNew()) {
         window.setTimeout(initOnReady, refreshTimeMs);
       } else {
@@ -104,6 +105,8 @@ export class StitchView extends DOMWidgetView {
   }
 
   emit_init_state() {
+    // TODO: Check this out
+    console.log("emit_init_state fired");
     const state = this.model.get('state');
     if (state === '') {
       // console.log('stitch:empty init state');
