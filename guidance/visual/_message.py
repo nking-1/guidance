@@ -85,7 +85,8 @@ class OutputRequestMessage(GuidanceMessage):
     pass
 
 
-model_registry: Dict[str, type(GuidanceMessage)] = {
+# Note - update this if you need to make a new message
+model_registry: Dict[str, type[GuidanceMessage]] = {
     'TraceMessage': TraceMessage,
     'ExecutionStartedMessage': ExecutionStartedMessage,
     'ExecutionCompletedMessage': ExecutionCompletedMessage,
