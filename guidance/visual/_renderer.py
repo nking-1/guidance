@@ -12,6 +12,7 @@ from typing import Optional, Tuple
 from asyncio import Queue
 from functools import partial
 import traceback
+import json
 
 from . import MetricMessage
 from ._environment import Environment
@@ -24,7 +25,7 @@ from ..visual import GuidanceMessage, TraceMessage, ResetDisplayMessage, ClientR
 from warnings import warn
 
 try:
-    from IPython.display import clear_output, display, HTML
+    from IPython.display import clear_output, display, HTML, Javascript
     from IPython import get_ipython
 
     ipython_imported = True
@@ -101,9 +102,33 @@ async def _create_queue() -> Queue:
 def _on_stitch_clientmsg(recv_queue_weakref: weakref.ReferenceType["Queue"], change: dict) -> None:
     from ..registry import get_bg_async
 
-    # NOTE(nopdive): Widget callbacks do not print to stdout/stderr nor module log.
     recv_queue = recv_queue_weakref()
     if recv_queue is not None:
+        try:
+            msg_raw = change.get('new', '')
+            msg = json.loads(msg_raw)
+
+            if msg.get("type") == "final_state":
+                app_state_json = msg.get("content", "{}")
+                js_code = f"""
+                (function() {{
+                    let existing = document.getElementById("__guidance_state");
+                    if (!existing) {{
+                        const script = document.createElement('script');
+                        script.id = "__guidance_state";
+                        script.type = "application/json";
+                        script.textContent = {json.dumps(app_state_json)};
+                        document.body.appendChild(script);
+                        console.log("✅ Embedded __guidance_state into DOM for export.");
+                    }} else {{
+                        console.warn("⚠️ __guidance_state already exists — skipping injection.");
+                    }}
+                }})();
+                """
+                display(Javascript(js_code))
+        except Exception as e:
+            print(f"⚠️ Error handling final_state injection: {e}")
+
         get_bg_async().call_soon_threadsafe(recv_queue.put_nowait, change['new'])
 
 

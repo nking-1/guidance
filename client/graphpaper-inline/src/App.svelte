@@ -141,7 +141,15 @@ For upcoming features, we won't be able to send all details over the wire, and w
       };
       state.set(stateMessage);
 
-      // console.log(appState.components);
+      console.log("Execution completed:", appState.components);
+
+      if (appState.requireFullReplay == true) {
+        const msg: StitchMessage = {
+          type: 'clientmsg',
+          content: JSON.stringify({ 'class_name': 'OutputRequestMessage' })
+        };
+        clientmsg.set(msg);
+      }
     }
 
     appState = appState;
@@ -150,6 +158,20 @@ For upcoming features, we won't be able to send all details over the wire, and w
   $: if ($state !== undefined && $state.content !== '') {
     // console.log("Client state received.")
     appState = JSON.parse($state.content);
+  }
+  $: {
+    if (
+      ($state === undefined || $state.content === '') &&
+      appState.components.length === 0
+    ) {
+      const embedded = document.getElementById("__guidance_state");
+      if (embedded?.textContent) {
+        console.log("💾 Rehydrated appState from embedded DOM script.");
+        appState = JSON.parse(embedded.textContent);
+      } else {
+        console.warn("⚠️ No embedded state found — will fallback to requesting full replay.");
+      }
+    }
   }
   $: if ($kernelmsg !== undefined && $kernelmsg.content !== '') {
     const msg = JSON.parse($kernelmsg.content);
