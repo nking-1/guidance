@@ -55,6 +55,7 @@ class ExecutionCompletedMessage(GuidanceMessage):
     is_err: bool = False
 
 
+# TODO: Deprecate?
 class TokensMessage(GuidanceMessage):
     """Fired when trace messages are completed, with tokens for client."""
     trace_id: int

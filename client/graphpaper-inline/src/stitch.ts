@@ -31,6 +31,7 @@ export interface TextOutput extends NodeAttr {
     prob: number,
 }
 
+
 export interface ImageOutput extends NodeAttr {
     class_name: 'ImageOutput',
     value: string,
